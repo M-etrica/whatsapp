@@ -30,7 +30,6 @@
     "sourceRoot": "/",
     "outDir": "dist",
     "baseUrl": ".",
-    "types": ["node"],
     "paths": {
       "*": ["node_modules/*", "src/types/*"]
     },

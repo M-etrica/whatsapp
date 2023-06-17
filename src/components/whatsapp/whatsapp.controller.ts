@@ -20,7 +20,7 @@ export async function sendMessageTemplate(
   next: NextFunction
 ) {
   try {
-    const data = await service.sendMessageTemplate(req.body);
+    const data = await service.templateMessageDispatcher(req.body);
     return res.status(200).json({ message: 'OK', ...data });
   } catch (err) {
     return next(err);

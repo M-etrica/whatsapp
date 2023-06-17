@@ -1,14 +1,23 @@
 import axios from 'axios';
 import Pino from 'pino';
-import { SendMessageInput, SendTemplateMessageInput } from './whatsapp.dto';
+import {
+  SendCredentialsInput,
+  SendDocumentsInput,
+  SendFinalInput,
+  SendMeetingHRInput,
+  SendMessageInput,
+  SendTemplateMessageInput,
+  sendTemplateMessageSchema,
+} from './whatsapp.dto';
 
 const pino = Pino();
 
+const FROM_PHONE_NUMBER_ID = '117739507987450';
+
 async function sendMessage(record: SendMessageInput) {
   try {
-    const FROM_PHONE_NUMBER_ID = '108956085493524';
     const response = await axios.post(
-      `https://graph.facebook.com/v16.0/${FROM_PHONE_NUMBER_ID}/messages`,
+      `https://graph.facebook.com/v17.0/${FROM_PHONE_NUMBER_ID}/messages`,
       {
         messaging_product: 'whatsapp',
         to: record.to.phone,
@@ -31,11 +40,112 @@ async function sendMessage(record: SendMessageInput) {
   }
 }
 
+async function sendMeetingHR(record: SendMeetingHRInput) {
+  return sendMessageTemplate({
+    to: record.to,
+    template: 'meeting_hr',
+    components: [
+      {
+        type: 'body',
+        parameters: [
+          {
+            type: 'text',
+            text: `${record.firstName} ${record.lastName}`,
+          },
+        ],
+      },
+    ],
+  });
+}
+
+async function sendCredentials(record: SendCredentialsInput) {
+  return sendMessageTemplate({
+    to: record.to,
+    template: 'credenciales_2',
+    components: [
+      {
+        type: 'body',
+        parameters: [
+          {
+            type: 'text',
+            text: `${record.firstName} ${record.lastName}`,
+          },
+          {
+            type: 'text',
+            text: record.email,
+          },
+          {
+            type: 'text',
+            text: record.password,
+          },
+        ],
+      },
+    ],
+  });
+}
+
+async function sendDocuments(record: SendDocumentsInput) {
+  return sendMessageTemplate({
+    to: record.to,
+    template: 'documents',
+    components: [
+      {
+        type: 'body',
+        parameters: [
+          {
+            type: 'text',
+            text: `${record.firstName} ${record.lastName}`,
+          },
+          {
+            type: 'text',
+            text: record.link,
+          },
+        ],
+      },
+    ],
+  });
+}
+
+async function sendFinal(record: SendFinalInput) {
+  return sendMessageTemplate({
+    to: record.to,
+    template: 'final',
+    components: [
+      {
+        type: 'text',
+        text: `${record.firstName} ${record.lastName}`,
+      },
+      {
+        type: 'text',
+        text: record.link,
+      },
+    ],
+  });
+}
+
+async function templateMessageDispatcher(record: sendTemplateMessageSchema) {
+  console.log(record);
+  if (record.template === 'meeting_hr') {
+    return sendMeetingHR(record);
+  }
+  if (record.template === 'credentials') {
+    return sendCredentials(record);
+  }
+  if (record.template === 'documents') {
+    return sendDocuments(record);
+  }
+  if (record.template === 'final') {
+    return sendFinal(record);
+  }
+  return {
+    message: 'ERR',
+  };
+}
+
 async function sendMessageTemplate(record: SendTemplateMessageInput) {
   try {
-    const FROM_PHONE_NUMBER_ID = '108956085493524';
     const response = await axios.post(
-      `https://graph.facebook.com/v16.0/${FROM_PHONE_NUMBER_ID}/messages`,
+      `https://graph.facebook.com/v17.0/${FROM_PHONE_NUMBER_ID}/messages`,
       {
         messaging_product: 'whatsapp',
         to: record.to,
@@ -67,7 +177,7 @@ async function webhook(record: Record<string, any>) {
       name: record.entry[0].changes[0].value.contacts[0].profile.name,
       phone: record.entry[0].changes[0].value.contacts[0].wa_id,
     },
-    message: 'Por este momento soy un bot de prueba, pero pronto estaré listo.',
+    message: 'Hola! Soy un bot informativo, no puede responder a este mensaje.',
   });
   return record;
 }
@@ -90,4 +200,5 @@ export default {
   sendMessageTemplate,
   webhook,
   registerWebhook,
+  templateMessageDispatcher,
 };

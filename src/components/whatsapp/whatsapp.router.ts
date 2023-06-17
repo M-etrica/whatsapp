@@ -7,7 +7,7 @@ import {
 } from './whatsapp.controller';
 import {
   sendMessageInputSchema,
-  sendTemplateMessageInputSchema,
+  sendTemplateMessageSchema,
 } from './whatsapp.dto';
 import { validate } from '../../middleware/validation';
 
@@ -18,7 +18,7 @@ const router = Router();
 router.post('/wa/message/text', validate(sendMessageInputSchema), sendMessage);
 router.post(
   '/wa/message/template',
-  validate(sendTemplateMessageInputSchema),
+  validate(sendTemplateMessageSchema),
   sendMessageTemplate
 );
 
